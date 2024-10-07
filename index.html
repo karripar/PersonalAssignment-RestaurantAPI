@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student restaurants app">
+  <link rel="icon" type="image/svg+xml" href="/app-icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png" sizes="192x192">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Document</title>
+  <link href="public/main.css" rel="stylesheet">
+  <link href="public/responsive.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tDmiZyoHS5obTRR9BMY="crossorigin=""/>
+  <script src="https://kit.fontawesome.com/028aeaa763.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""></script>
+  <script src="build/main.js" type="module"></script>
+  <title>Student Restaurants PWA</title>
+</head>
+<nav class="main-nav">
+  <h3>Student restaurants</h3>
+  <div class="log-in">
+    <button id="log-in"><i class="fa-solid fa-right-to-bracket"></i></button>
+  </div>
+</nav>
+<body>
+  <div id="backdrop" class="backdrop"></div>
+  <div id="map">
+  </div>
+  <div class="filter-buttons">
+    <select class="filter-select" id="city-selector">
+      <option value="">Filter by city</option>
+    </select>
+    <select class="filter-select" id="company-selector">
+      <option value="">Filter by company</option>
+    </select>
+    <button id="nearest-restaurant">Nearest Restaurant</button>
+    <button id="show-favorite">Favorite Restaurant</button>
+  </div>
+  <dialog class="modal">
+  </dialog>
+  <dialog id="user-dialog" class="user-dialog">
+    <form method="dialog" class="dialog-form" id="dialog-form">
+      <div class="form-toggle">
+        <input type="radio" class="toggle-input" id="register-toggle" name="form-mode" value="register" checked>
+        <label for="register-toggle">Register</label>
+        <input type="radio" class="toggle-input" id="login-toggle" name="form-mode" value="login">
+        <label for="login-toggle">Login</label>
+        <div id="error-msg"></div>
+        <div id="success-msg"></div>
+      </div>
+
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        autocomplete="off"
+        required
+        minlength="3"
+      >
+
+      <div id="email-container">
+        <label for="email">Email</label>
+        <input
+          type="text"
+          id="email"
+          name="email"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        pattern="(?=.*\d)(?=.*[A-ZÄÖÅ]).+"
+        title="Password must include at least one uppercase letter and one numeral."
+        minlength="8"
+        maxlength="16"
+        autocomplete="new-password"
+        required
+      >
+      <label><input id="show-password" type="checkbox">Show password</label>
+      <div id="password-error"></div>
+      <div class="dialog-btns">
+        <button id="submit-btn" class="submit-btn" type="submit">Register</button>
+        <button id="close-btn" class="close-btn" type="button">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <footer class="foot">
+    <h4>Copyright, karripar</h4>
+  </footer>
+</body>
+
+</html>
