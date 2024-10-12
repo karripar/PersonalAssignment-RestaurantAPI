@@ -44,7 +44,6 @@ closeModal?.addEventListener('click', () => {
 });
 
 
-
 const initMap = async (color: string) => { // initialize the map with the color and the user location
   try {
     const userLocation = await getUserLocation();
@@ -55,6 +54,9 @@ const initMap = async (color: string) => { // initialize the map with the color 
       zoom: 14,
     };
     map = L.map('map', mapOptions);
+
+    L.control.scale().addTo(map);
+
 
     L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/' + color + '_all/{z}/{x}/{y}{r}.png',
@@ -497,7 +499,7 @@ showFavoriteButton?.addEventListener('click', async () => {
         dialog.showModal();
         document.body.classList.add('no-scroll');
       }
-      return; // Stop execution until the user is logged in
+      return; // Stop executing until the user is logged in
     }
 
     try {

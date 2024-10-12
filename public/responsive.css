@@ -2,12 +2,8 @@
   --blackolive: #313628;
   --coolpurple: #5E0035;
   --beige: #E4E6C3;
-  --powderblue: #94B0DA;
-  --coolgray: #A09EBB;
-  --carolina-blue: #7eaac8ff;
   --coffee: #735240ff;
   --ebony: #51544dff;
-  --lapis-lazuli: #21567bff;
   --silver: #a8a5a4ff;
   --margin-auto: auto;
   --dark-af: #0A0908;
@@ -102,7 +98,7 @@
   }
 
   div.log-in {
-    scale: 0.8;
+    transform: scale(0.8);
     margin-right: .5rem;
   }
 
@@ -284,6 +280,11 @@
     height: 3rem;
     font-size: 12px;
   }
+
+  #map {
+    height: 50vh;
+  }
+
 }
 
 @media only screen and (max-height: 500px) {

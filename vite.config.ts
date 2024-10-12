@@ -12,7 +12,7 @@ export default defineConfig({
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,ttf}'],
         },
-        includeAssets: ['app-icon.svg', 'main.css', 'responsive.css', 'Raleway-VariableFont_wght.ttf', 'app-icon.png', 'restaurant-icon.png', 'restaurant-icon-highlight.png', 'app-icon.svg', 'foliage.jpg'],
+        includeAssets: ['app-icon.svg', 'main.css', 'responsive.css', 'Raleway-VariableFont_wght.ttf', 'app-icon.png', 'restaurant-icon.png', 'restaurant-icon-highlight.png', 'app-icon.svg'],
         manifest: {
           name: 'Student Restaurants PWA',
           short_name: 'Student Restaurants',
