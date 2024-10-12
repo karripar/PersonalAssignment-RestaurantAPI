@@ -1,22 +1,22 @@
 import { DailyMenu, WeeklyMenu} from "./types/Menu";
 import { Restaurant } from "./types/Restaurant";
 
-const restaurantIcon = L.icon({
-  iconUrl: './src/img/restaurant-icon.png',
-  iconSize: [120, 100],
+const restaurantIcon = L.icon({ // Default icon for restaurants
+  iconUrl: './img/restaurant-icon.png',
+  iconSize: [120, 90],
   iconAnchor: [60, 100],
   popupAnchor: [0, -80],
 })
 
-const restaurantIconHighlighted = L.icon({
-  iconUrl: './src/img/restaurant-icon-highlight.png',
-  iconSize: [120, 100],
+const restaurantIconHighlighted = L.icon({ // Highlighted icon for favorite restaurants
+  iconUrl: './img/restaurant-icon-highlight.png',
+  iconSize: [120, 90],
   iconAnchor: [60, 100],
   popupAnchor: [0, -80],
 });
 
 
-
+// Function to create the modal content for a restaurant
 const restaurantModal = (restaurant: Restaurant, menu: DailyMenu | WeeklyMenu, menuType: 'daily' | 'weekly') => {
   const { name, address, city, postalCode, phone, company } = restaurant;
   let html = `
@@ -26,9 +26,9 @@ const restaurantModal = (restaurant: Restaurant, menu: DailyMenu | WeeklyMenu, m
     <p><strong>Phone:</strong> ${phone ?? 'N/A'}</p>
   `;
 
-  if (menuType === 'daily') {
+  if (menuType === 'daily') { // Daily menu
     html += `
-      <h4>Today's Menu</h4>
+      <h4>Today's Menu: </h4>
       <table>
         <thead>
           <tr>
@@ -64,7 +64,7 @@ const restaurantModal = (restaurant: Restaurant, menu: DailyMenu | WeeklyMenu, m
       </table>
     `;
 
-  } else if (menuType === 'weekly') {
+  } else if (menuType === 'weekly') { // Weekly menu
     html += `<h4>This Week's Menu</h4>`;
 
     const weeklyMenu = menu as WeeklyMenu;
@@ -86,7 +86,7 @@ const restaurantModal = (restaurant: Restaurant, menu: DailyMenu | WeeklyMenu, m
             <tbody>
         `;
 
-        courses.forEach((course) => {
+        courses.forEach((course) => { // Loop through courses
           const { name, diets, price } = course;
           html += `
             <tr class="weekly-tr">
@@ -112,34 +112,50 @@ const restaurantModal = (restaurant: Restaurant, menu: DailyMenu | WeeklyMenu, m
 
 
 
-const errorModal = (message: string) => {
+const errorModal = (message: string) => { // Error modal
   const html = `
         <div class="error-modal">
-          <div class="close-modal">
-            <button id="close-dialog">&#128940</button>
-          </div>
-        <h3>Error</h3>
+        <h3>Alert!</h3>
         <p>${message}</p>
-        <p>Please check your internet and/or VPN connection
         </div>
         `;
   return html;
 };
 
-const popupContent = (restaurant: Restaurant, isFavorite: boolean): string => {
-  const {name, address, company, city, postalCode} = restaurant;
+const popupContent = (restaurant: Restaurant, isFavorite: boolean): string => { // Popup content for markers
+  const { name, address, company, city, postalCode } = restaurant;
+
   let content = `
     <div class="marker-popup">
-    <h3>${name}</h3>
-    <p>${company}</p>
-    <p>${address}, ${postalCode} ${city}</p>
-    <div class="popup-buttons">
-    <button id="todays-menu">Today's menu</button>
-    <button id="weekly-menu">Weekly menu</button>
-    ${isFavorite ? '<p class="favorite-p">Favorite restaurant</p>' : '<button id="favorite-button">Add as Favorite</button>'}
-    </div>
+      <h3>${name}</h3>
+      <p>${company}</p>
+      <p>${address}, ${postalCode} ${city}</p>
+      <div class="popup-buttons">
+        <button id="todays-menu">Today's menu</button>
+        <button id="weekly-menu">Weekly menu</button>
+        ${isFavorite ? '<p class="favorite-p">Favorite restaurant</p>' : '<button id="favorite-button">Add as Favorite</button>'}
+      </div>
     </div>`;
+
   return content;
+};
+
+
+const logoutModal = () => { // Logout modal
+  const html = `
+    <div class="logout-modal">
+    <div class="logout-modal-content">
+      <h3>Logout?</h3>
+      <div class="log-out-image"></div>
+      <p>Are you sure you want to logout?</p>
+      <div class="logout-buttons">
+        <button id="logout-yes">Confirm</button>
+        <button id="logout-no">Cancel</button>
+      </div>
+      </div>
+    </div>
+  `;
+  return html;
 }
 
-export {restaurantModal, errorModal, popupContent, restaurantIcon, restaurantIconHighlighted};
+export {restaurantModal, errorModal, popupContent, restaurantIcon, restaurantIconHighlighted, logoutModal};

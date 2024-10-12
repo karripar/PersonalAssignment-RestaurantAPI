@@ -1,7 +1,7 @@
 
 @font-face {
   font-family: 'Raleway';
-  src: url(../public/fonts/Raleway/Raleway-VariableFont_wght.ttf);
+  src: url(./fonts/Raleway/Raleway-VariableFont_wght.ttf) format('truetype');
   font-weight: 400;
   font-style: normal;
 }
@@ -26,6 +26,7 @@
   --cool-orange: #C27A1A;
   --cool-yellow: #f9d423;
   --navy: #023047;
+  --not-so-white: #f8f9fa;
 
 }
 
@@ -39,6 +40,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  transition: background-color 0.5s linear;
 }
 
 button {
@@ -57,6 +59,7 @@ button {
   overflow: hidden;
   margin-bottom: 0;
   position: relative;
+  transition: background-color 0.5s linear;
 
 }
 
@@ -76,16 +79,24 @@ button {
   transform: translateX(-50%);
 }
 
+.headline {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  justify-content: center;
+}
+
 
 div.log-in {
   width: 6rem;
   margin-left: auto;
-  margin-right: 1rem;
+  margin-right: 2rem;
 }
 
 
 button#log-in {
-  background-color: var(--cool-orange);
+  /*background-color: var(--cool-orange);*/
+  background: linear-gradient(135deg, #6e45e2, #88d3ce);
   color: var(--beige);
   border: none;
   border-radius: 14px;
@@ -96,8 +107,7 @@ button#log-in {
 }
 
 button#log-in:hover {
-  background-color: var(--beige);
-  color: var(--cool-orange);
+  box-shadow: 0 8px 20px rgba(110, 69, 226, 0.6);
   transform: scale(1.05);
   transition: 0.3s ease-in-out;
   cursor: pointer;
@@ -144,7 +154,7 @@ td {
 #map {
   display: flex;
   width: 100%;
-  height: 40rem;
+  height: 70vh;
   margin-top: 0;
   overflow-x: hidden;
 }
@@ -238,6 +248,7 @@ dialog {
   height: 3rem;
   margin-top: .5rem;
   gap: .5rem;
+  margin-bottom: 5rem;
 }
 
 .filter-buttons button {
@@ -249,7 +260,7 @@ dialog {
   font-size: 12px;
   cursor: pointer;
   letter-spacing: 1.5px;
-  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.5s linear;
 }
 
 .filter-buttons button:hover {
@@ -428,7 +439,7 @@ div.legend-item {
 }
 
 #restaurant-icon {
-  background-image: url(../public/img/restaurant-icon.png);
+  background-image: url(./img/restaurant-icon.png);
   background-size: contain;
   height: 100px;
   width: 100px;
@@ -436,7 +447,7 @@ div.legend-item {
 }
 
 #restaurant-icon-highlighted {
-  background-image: url(../public/img/restaurant-icon-highlight.png);
+  background-image: url(./img/restaurant-icon-highlight.png);
   background-size: contain;
   height: 100px;
   width: 100px;
@@ -484,10 +495,6 @@ div.legend-item {
   max-width: 30%;
   width: auto;
   max-height: 85vh;
-  background-image: url(../public/img/foliage.jpg);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
 }
 
 label {
@@ -717,4 +724,148 @@ input#register-toggle {
 
 /* #endregion LOG IN MODAL ********************************************************************/
 
-/*
+/* #region THEME-SWITCH ********************************************************************/
+
+.checkbox-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 3rem;
+}
+
+.checkbox {
+  opacity: 0;
+  position: absolute;
+}
+
+.checkbox-label {
+  background-color: var(--ebony);
+  width: 50px;
+  height: 26px;
+  border-radius: 50px;
+  position: relative;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fa-moon {color: #f1c40f;}
+
+.fa-sun {color: #f39c12;}
+
+.checkbox-label .ball {
+  background: linear-gradient(135deg, lightgray, white);
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+}
+
+.checkbox:checked + .checkbox-label .ball {
+  transform: translateX(24px);
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+}
+
+.checkbox:checked + .checkbox-label {
+  background-color: rgb(235, 217, 183);
+}
+
+/* #endregion THEME-SWITCH ********************************************************************/
+
+/* #region light theme ********************************************************************/
+.main-nav.light {
+  background-color: var(--not-so-white);
+  transition: background-color 0.5s linear;
+}
+
+body.light {
+  background-color: var(--not-so-white);
+  transition: background-color 0.5s linear;
+}
+
+.filter-buttons button.light {
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+}
+
+.foot.light {
+  background-color: var(--silver);
+}
+
+.foot h4.light {
+  color: var(--not-so-white);
+}
+
+/* #endregion light theme ********************************************************************/
+
+/* #region logout modal ********************************************************************/
+
+.logout-modal {
+  margin: auto;
+  color: var(--beige);
+  border-radius: 7px;
+  height: 50vh;
+  width: 60vw;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  overflow: hidden;
+}
+
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0); /* At the start and end, no movement */
+  }
+  50% {
+    transform: translateY(-20px); /* Move upwards by 20px at the midpoint */
+  }
+}
+
+.log-out-image {
+  background-image: url(./img/talking-hamburger.png);
+  background-size: contain;
+  height: 150px;
+  width: 150px;
+  background-repeat: no-repeat;
+  margin: auto;
+  animation: bounce 1s ease-in-out infinite;
+  animation-delay: 1;
+}
+
+.logout-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+.logout-buttons button {
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 15px;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.logout-buttons button:hover {
+  box-shadow: 0 8px 20px rgba(110, 69, 226, 0.6);
+  transform: translateY(-1px);
+}
+
+#logout-yes {
+background: linear-gradient(135deg, #00b09b, #96c93d);
+}
+
+#logout-no {
+  background: linear-gradient(135deg, #555555, #2b2b2b);
+}
+/* #endregion logout modal ********************************************************************/

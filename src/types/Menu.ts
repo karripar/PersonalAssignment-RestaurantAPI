@@ -1,19 +1,19 @@
-type Course = {
+type Course = { // Course type
     name: string;
     price: string;
     diets: string;
 }
 
-type DailyMenu = {
+type DailyMenu = { // Daily menu type
     courses: Course[];
 }
 
-type Day = DailyMenu & {date: string};
+type Day = DailyMenu & {date: string}; // Day type
 
 type WeeklyMenu = {
-    days: Day[];
+    days: Day[]; // Weekly menu type
     courses: Course[];
 }
 
 
-export {DailyMenu, WeeklyMenu, Course};
+export type {DailyMenu, WeeklyMenu, Course};

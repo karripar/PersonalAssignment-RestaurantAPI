@@ -1,6 +1,6 @@
 import { Point } from "./Point";
 
-type Restaurant = {
+type Restaurant = { // Restaurant type
     _id: string;
     companyId: number;
     name: string;
@@ -12,4 +12,4 @@ type Restaurant = {
     company: string;
 }
 
-export {Restaurant};
+export type {Restaurant};

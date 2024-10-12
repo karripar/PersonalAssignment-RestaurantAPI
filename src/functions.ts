@@ -1,10 +1,9 @@
 import {Restaurant} from './types/Restaurant';
-import { LoginUser, User } from './types/credentials';
-import { UpdateResult, UploadResult } from './types/Result';
-import { errorModal } from './components';
-import { apiUrl } from './variables';
+import {getFavorite} from './types/credentials';
+import {errorModal} from './components';
+import {apiUrl} from './variables';
 
-const fetchData = async <T>(
+const fetchData = async <T>( // Fetch data from API (general function)
   url: string,
   options: RequestInit = {}
 ): Promise<T> => {
@@ -16,43 +15,55 @@ const fetchData = async <T>(
   return json;
 };
 
-
-const getUserLocation = async(): Promise<[number, number]> => {
+const getUserLocation = async (): Promise<[number, number]> => { // Get user location
   try {
-    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      });
-    });
-    return [position.coords.latitude, position.coords.longitude];
+    const position = await new Promise<GeolocationPosition>(
+      (resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000, // 10 seconds
+          maximumAge: 0, // No cache
+        });
+      }
+    );
+    return [position.coords.latitude, position.coords.longitude]; // Return coordinates
   } catch (error) {
     throw new Error('Could not get user location');
   }
-}
+};
 
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+const calculateDistance = ( // Calculate distance between two coordinates
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) => {
   const R = 6371; // Radius of the Earth in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 };
 
-const clearMarkers = (map: L.Map, markers: L.Marker[]) => {
+const clearMarkers = (map: L.Map, markers: L.Marker[]) => { // Clear markers from map
   markers.forEach((marker) => map.removeLayer(marker));
   markers = [];
-}
+};
 
-const populateCityDropdown = (restaurants: Restaurant[]) => {
-  const cityDropdown = document.getElementById('city-selector') as HTMLSelectElement;
-  const uniqueCities = [...new Set(restaurants.map((restaurant) => restaurant.city))];
-  uniqueCities.sort((a, b) => a.localeCompare(b));
+const populateCityDropdown = (restaurants: Restaurant[]) => { // Populate city dropdown
+  const cityDropdown = document.getElementById(
+    'city-selector'
+  ) as HTMLSelectElement;
+  const uniqueCities = [
+    ...new Set(restaurants.map((restaurant) => restaurant.city)),  // Get unique cities, ...new Set() removes duplicates
+  ];
+  uniqueCities.sort((a, b) => a.localeCompare(b)); // Sort cities alphabetically
 
   uniqueCities.forEach((city) => {
     const option = document.createElement('option');
@@ -62,9 +73,13 @@ const populateCityDropdown = (restaurants: Restaurant[]) => {
   });
 };
 
-const populateCompanyDropdown = (restaurants: Restaurant[]) => {
-  const companyDropdown = document.getElementById('company-selector') as HTMLSelectElement;
-  const companies = [...new Set(restaurants.map((restaurant) => restaurant.company))];
+const populateCompanyDropdown = (restaurants: Restaurant[]) => { // Populate company dropdown
+  const companyDropdown = document.getElementById(
+    'company-selector'
+  ) as HTMLSelectElement;
+  const companies = [
+    ...new Set(restaurants.map((restaurant) => restaurant.company)),
+  ]; // Get unique companies
   companies.sort((a, b) => a.localeCompare(b));
 
   companies.forEach((company) => {
@@ -75,71 +90,52 @@ const populateCompanyDropdown = (restaurants: Restaurant[]) => {
   });
 };
 
-
-const showPassword = () => {
-  const input = document.getElementById("password") as HTMLInputElement;
-  if (input.type === "password") {
-    input.type = "text";
+const showPassword = () => { // Show password
+  const input = document.getElementById('password') as HTMLInputElement;
+  if (input.type === 'password') {
+    input.type = 'text';
   } else {
-    input.type = "password";
+    input.type = 'password';
   }
-}
+};
 
-const isLoggedIn = (): boolean => {
+const isLoggedIn = (): boolean => { // Check if user is logged in
   const token = localStorage.getItem('token');
   return token ? true : false;
-}
+};
 
-const updateLoginButton = () => {
+const updateLoginButton = () => { // Update login button
   const logInButton = document.getElementById('log-in') as HTMLButtonElement;
   if (!logInButton) return;
 
   if (isLoggedIn()) {
     // Update button to show logout state
-    logInButton.innerHTML = 'Log out <i class="fa-solid fa-right-from-bracket"></i>'; // Change icon to indicate logout
-    logInButton.style.backgroundColor = 'var(--lapis-lazuli)';
+    logInButton.innerHTML =
+      'Log out <i class="fa-solid fa-right-from-bracket"></i>'; // Change icon to indicate logout
+    logInButton.style.background = 'linear-gradient(135deg, #ff6a00, #ee0979)';
     logInButton.title = 'Log out';
-
-    logInButton.onclick = () => {
-      // Log out functionality
-      localStorage.removeItem('token');
-      localStorage.removeItem('favoriteRestaurant');
-      console.log('User logged out');
-      updateLoginButton(); // Update button appearance after logout
-      location.reload();
-    };
   } else {
     // Update button to show login state
-    logInButton.innerHTML = 'Log in <i class="fa-solid fa-right-to-bracket"></i>'; // Change icon back to login
+    logInButton.innerHTML =
+      'Log in <i class="fa-solid fa-right-to-bracket"></i>'; // Change icon back to login
+    logInButton.style.background = 'linear-gradient(135deg, #6e45e2, #88d3ce);';
     logInButton.title = 'Log in';
-
-    logInButton.onclick = () => {
-      // Show login dialog
-      const dialog = document.querySelector('#user-dialog') as HTMLDialogElement;
-      const backdrop = document.getElementById('backdrop') as HTMLElement;
-      if (backdrop && dialog) {
-        backdrop.style.display = 'block';
-        dialog.showModal();
-        document.body.classList.add('no-scroll');
-      }
-    };
   }
 };
 
-
-const addRestaurantToFavorites = async (restaurantId: string) => {
+const addRestaurantToFavorites = async (restaurantId: string) => { // Add restaurant to favorites
   const modal = document.querySelector('dialog') as HTMLDialogElement;
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token'); // Get token from localStorage
     if (!token) {
-      throw new Error('User not logged in');
+      return;
     }
 
-    if (!restaurantId) {
+    if (!restaurantId) { // Check if restaurant ID is valid
       throw new Error('Invalid restaurant ID');
     }
 
-    const data = { favouriteRestaurant: restaurantId };
+    const data = {favouriteRestaurant: restaurantId};
 
     const options: RequestInit = {
       method: 'PUT',
@@ -150,21 +146,43 @@ const addRestaurantToFavorites = async (restaurantId: string) => {
       body: JSON.stringify(data),
     };
 
-    const response = await fetchData(apiUrl + '/users', options);
-    console.log("Restaurant added to favorites, response:", response);
+    const response = await fetchData<getFavorite>(apiUrl + '/users', options);
+    console.log('Restaurant added to favorites, response:', response);
 
     // Ensure response is successful before setting the ID in localStorage
     if (response) {
       localStorage.setItem('favoriteRestaurant', restaurantId);
-
     } else {
       throw new Error('Failed to add restaurant to favorites');
     }
-  } catch (error) {
+  } catch (error) { // Error handling
     console.error('Error adding favorite restaurant:', error);
     modal.innerHTML = errorModal((error as Error).message);
-    modal.showModal();
+    const closeButtonHtml = `
+                      <div class="close-modal">
+                        <button id="close-dialog">&#128940</button>
+                      </div>`;
+    modal.insertAdjacentHTML('beforeend', closeButtonHtml);
+    modal.showModal(); // Show modal with menu details
+    const closeButton = document.getElementById(
+      'close-dialog'
+    ) as HTMLButtonElement;
+    closeButton &&
+      closeButton.addEventListener('click', () => {
+        modal.close();
+      });
   }
 };
 
-export {fetchData, getUserLocation, calculateDistance, clearMarkers, populateCityDropdown, populateCompanyDropdown, showPassword, isLoggedIn, updateLoginButton, addRestaurantToFavorites};
+export {
+  fetchData,
+  getUserLocation,
+  calculateDistance,
+  clearMarkers,
+  populateCityDropdown,
+  populateCompanyDropdown,
+  showPassword,
+  isLoggedIn,
+  updateLoginButton,
+  addRestaurantToFavorites,
+};

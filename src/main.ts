@@ -1,9 +1,11 @@
+import * as L from 'leaflet';
 import {
   errorModal,
   restaurantModal,
   popupContent,
   restaurantIcon,
   restaurantIconHighlighted,
+  logoutModal
 } from './components';
 import {
   fetchData,
@@ -20,8 +22,7 @@ import {
 import {apiUrl} from './variables';
 import {Restaurant} from './types/Restaurant';
 import {DailyMenu, WeeklyMenu} from './types/Menu';
-import { LoginUser, User, UpdateUser, getFavorite} from './types/credentials';
-import { UpdateResult, UploadResult } from './types/Result';
+import { LoginUser, User, getFavorite} from './types/credentials';
 
 let map: L.Map;
 let markers: L.Marker[] = [];
@@ -31,7 +32,10 @@ const usernameInput = document.querySelector('#username') as HTMLInputElement;
 const passwordInput = document.querySelector('#password') as HTMLInputElement;
 const emailInput = document.querySelector('#email') as HTMLInputElement;
 const closeModal = document.querySelector('.close-modal') as HTMLDivElement;
-const modal = document.querySelector('dialog');
+const modal = document.querySelector('dialog') as HTMLDialogElement;
+const logoutDialog = document.querySelector('dialog') as HTMLDialogElement;
+const backdrop = document.getElementById('backdrop') as HTMLElement;
+
 if (!modal) {
   throw new Error('Modal not found');
 }
@@ -41,7 +45,7 @@ closeModal?.addEventListener('click', () => {
 
 
 
-const initMap = async (color: string) => {
+const initMap = async (color: string) => { // initialize the map with the color and the user location
   try {
     const userLocation = await getUserLocation();
     console.log(userLocation);
@@ -66,24 +70,24 @@ const initMap = async (color: string) => {
   }
 };
 
-initMap('dark');
+initMap('dark'); // Initialize the map with the dark theme
 
 closeModal && closeModal.addEventListener('click', () => {
     modal.close();
  });
 
- const createMarkers = (
+ const createMarkers = ( // create markers for the restaurants
   restaurants: Restaurant[],
   highlightClosest?: Restaurant | null
 ) => {
   clearMarkers(map, markers);
 
-  const favoriteRestaurantId = localStorage.getItem('favoriteRestaurant');
+  const favoriteRestaurantId = localStorage.getItem('favoriteRestaurant'); // Get the favorite restaurant ID from localStorage
 
   restaurants.forEach((restaurant) => {
     const [lon, lat] = restaurant.location.coordinates;
     const icon =
-      highlightClosest && restaurant._id === highlightClosest._id
+      highlightClosest && restaurant._id === highlightClosest._id // Highlight the closest restaurant
         ? restaurantIconHighlighted
         : restaurantIcon;
     const marker = L.marker([lat, lon], { icon }).addTo(map);
@@ -91,7 +95,7 @@ closeModal && closeModal.addEventListener('click', () => {
 
     const isFavorite = favoriteRestaurantId === restaurant._id;
     const popupHTML = popupContent(restaurant, isFavorite);
-    marker.bindPopup(popupHTML, {
+    marker.bindPopup(popupHTML, { // Create a popup for each marker
       className: 'custom-popup',
     });
 
@@ -124,8 +128,17 @@ closeModal && closeModal.addEventListener('click', () => {
               modal.close();
             });
 
-          } catch (error) {
+          } catch (error) { // Display error message if fetching the menu fails
             modal.innerHTML = errorModal((error as Error).message);
+            const closeButtonHtml = `
+                      <div class="close-modal">
+                        <button id="close-dialog">&#128940</button>
+                      </div>`;
+            modal.insertAdjacentHTML('beforeend', closeButtonHtml);
+            const closeButton = document.getElementById('close-dialog') as HTMLButtonElement;
+            closeButton && closeButton.addEventListener('click', () => {
+              modal.close();
+            });
             modal.showModal();
           }
         });
@@ -169,14 +182,12 @@ closeModal && closeModal.addEventListener('click', () => {
       if (favoriteBtn && !isFavorite) {
         favoriteBtn.addEventListener('click', async () => {
           await addRestaurantToFavorites(restaurant._id);
-
-          // Immediately update the button appearance after favoriting
-          favoriteBtn.textContent = 'Favorited'; // Update button text
-          favoriteBtn.disabled = true; // Optionally disable the button
-          favoriteBtn.classList.add('favorited'); // Optionally add a CSS class for styling
-
-          // Re-render the popup content to reflect that the restaurant is now favorited
-          marker.setPopupContent(popupContent(restaurant, true));
+          // Re-render the popup content to show that the restaurant is now a favorite
+          if (isLoggedIn()) {
+            marker.setPopupContent(popupContent(restaurant, true));
+          } else {
+            userDialog.showModal();
+          }
         });
       }
     });
@@ -205,7 +216,7 @@ const locate = async (pos: GeolocationPosition) => {
       }
     });
 
-    // Populate City Dropdown
+    // Populate City Dropdown and Company Dropdown for filtering
     populateCityDropdown(restaurants);
     populateCompanyDropdown(restaurants);
 
@@ -216,8 +227,8 @@ const locate = async (pos: GeolocationPosition) => {
       createMarkers(restaurants); // No closest restaurant found
     }
 
-    nearestButton &&
-      nearestButton.addEventListener('click', () => {
+
+    nearestButton?.addEventListener('click', () => {
         if (
           closestRestaurant &&
           closestRestaurant.location &&
@@ -226,7 +237,7 @@ const locate = async (pos: GeolocationPosition) => {
           const [lon, lat] = closestRestaurant.location.coordinates;
           const zoom = 16;
 
-          map.setView([lat, lon], zoom);
+          map.setView([lat, lon], zoom); // user clicks the button --> set view to the closest restaurant
         } else {
           console.log('No closest restaurant found, check gps permissions');
         }
@@ -236,14 +247,14 @@ const locate = async (pos: GeolocationPosition) => {
     const cityDropdown = document.getElementById(
       'city-selector'
     ) as HTMLSelectElement;
-    cityDropdown &&
-      cityDropdown.addEventListener('change', () => {
+
+    cityDropdown?.addEventListener('change', () => {
         const selectedCity = cityDropdown.value;
         const cityRestaurants = selectedCity
           ? restaurants.filter((restaurant) => restaurant.city === selectedCity)
           : restaurants;
-        const [lon, lat] = cityRestaurants[0].location.coordinates;
-        map.setView([lat, lon], 10); // Zoom to city
+        const [lon, lat] = cityRestaurants[0].location.coordinates; // Get the first restaurant's coordinates to zoom to city
+        map.setView([lat, lon], 10); // Zoom to city with a wider view to show all restaurants
         clearMarkers(map, markers);
         createMarkers(cityRestaurants, closestRestaurant); // Keep highlighting the closest restaurant
       });
@@ -251,8 +262,8 @@ const locate = async (pos: GeolocationPosition) => {
     const companyDropdown = document.getElementById(
       'company-selector'
     ) as HTMLSelectElement;
-    companyDropdown &&
-      companyDropdown.addEventListener('change', () => {
+
+    companyDropdown?.addEventListener('change', () => {
         const selectedCompany = companyDropdown.value;
         const companyRestaurants = selectedCompany
           ? restaurants.filter(
@@ -263,29 +274,56 @@ const locate = async (pos: GeolocationPosition) => {
         createMarkers(companyRestaurants, closestRestaurant); // Keep highlighting the closest restaurant
       });
   } catch (error) {
-    modal.innerHTML = errorModal((error as Error).message);
+    modal.innerHTML = errorModal("Couldn't fetch restaurants. Check your internet or VPN connection."); // Display error message
+    const closeButtonHtml = `
+                      <div class="close-modal">
+                        <button id="close-dialog">&#128940</button>
+                      </div>`;
+    modal.insertAdjacentHTML('beforeend', closeButtonHtml);
+    const closeButton = document.getElementById('close-dialog') as HTMLButtonElement;
+    closeButton && closeButton.addEventListener('click', () => {
+      modal.close();
+    });
     modal.showModal();
   }
 };
 
 const openLogIn = document.querySelector('#log-in') as HTMLButtonElement;
-openLogIn &&
-  openLogIn.addEventListener('click', () => {
+
+openLogIn?.addEventListener('click', () => {
     if (isLoggedIn()) {
-      // User is logged in, show a logout option or simply log out directly
+      // User is logged in, show a logout option
+      logoutDialog.innerHTML = ""; // Clear existing content
+      const modalContent = logoutModal();
+      logoutDialog.insertAdjacentHTML('beforeend', modalContent); // Insert the modal content
+      logoutDialog.showModal();
+      backdrop.style.display = 'block'; // Show the backdrop
 
-      localStorage.removeItem('token');
-      location.reload(); // Optional: refresh page to reflect logged-out state
+      const confirmLogout = document.getElementById('logout-yes') as HTMLButtonElement;
+      const cancelLogout = document.getElementById('logout-no') as HTMLButtonElement;
 
-      // Replace login button with logout button
+      // Add event listener for Confirm button
+      confirmLogout?.addEventListener('click', () => {
+        localStorage.removeItem('token'); // Remove token from local storage
+        logoutDialog.close();
+        backdrop.style.display = 'none'; // Hide the backdrop
+        updateLoginButton(); // Refresh the page to update the UI
+        location.reload();
+      });
+
+      // Add event listener for Cancel button
+      cancelLogout?.addEventListener('click', () => {
+        backdrop.style.display = 'none'; // Hide the backdrop
+        logoutDialog.close(); // Simply close the modal
+      });
 
     } else {
-      // Show login dialog
-      const dialog = document.querySelector('#user-dialog') as HTMLDialogElement;
+      // Show login dialog if user is not logged in
+      const userDialog = document.querySelector('#user-dialog') as HTMLDialogElement;
       const backdrop = document.getElementById('backdrop') as HTMLElement;
-      if (backdrop && dialog) {
+      if (backdrop && userDialog) {
         backdrop.style.display = 'block';
-        dialog.showModal();
+        userDialog.showModal();
         document.body.classList.add('no-scroll');
       }
     }
@@ -293,9 +331,10 @@ openLogIn &&
 
 
 
+
 const closeLogIn = document.querySelector('#close-btn') as HTMLButtonElement;
-closeLogIn &&
-  closeLogIn.addEventListener('click', (event) => {
+
+closeLogIn?.addEventListener('click', (event) => { // Close the login dialog
     event.preventDefault();
     const dialog = document.querySelector('#user-dialog') as HTMLDialogElement;
     const backdrop = document.getElementById('backdrop') as HTMLElement;
@@ -310,8 +349,8 @@ closeLogIn &&
 });
 
 const userDialog = document.querySelector('#user-dialog') as HTMLDialogElement;
-userDialog &&
-  userDialog.addEventListener('close', () => {
+
+userDialog?.addEventListener('close', () => { // Close the login dialog and backdrop
     const backdrop = document.getElementById('backdrop') as HTMLElement;
     if (backdrop) {
       backdrop.style.display = 'none';
@@ -321,9 +360,9 @@ userDialog &&
 });
 
 const showPasswordButton = document.querySelector('#show-password') as HTMLButtonElement;
-showPasswordButton && showPasswordButton.addEventListener('click', showPassword);
+showPasswordButton?.addEventListener('click', showPassword);
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => { // Event listener for the login form
   updateLoginButton();
   const registerToggle = document.getElementById('register-toggle') as HTMLInputElement;
   const loginToggle = document.getElementById('login-toggle') as HTMLInputElement;
@@ -333,31 +372,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const successMsg = document.getElementById('success-msg') as HTMLDivElement; // Success message container
   let isRegistering = registerToggle && registerToggle.checked;
 
-  registerToggle.addEventListener('change', () => {
+  registerToggle.addEventListener('change', () => { // Toggle between login and register
     emailInput.disabled = false;
     emailContainer.style.display = 'block';
     submitBtn.textContent = 'Register';
     isRegistering = true;
   });
 
-  loginToggle.addEventListener('change', () => {
+  loginToggle.addEventListener('change', () => { // Toggle between login and register
     emailInput.disabled = true;
     emailContainer.style.display = 'none';
     submitBtn.textContent = 'Login';
     isRegistering = false;
   });
 
-  loginForm && loginForm.addEventListener('submit', async (event) => {
+  loginForm?.addEventListener('submit', async (event) => { // Submit the form
     event.preventDefault();
     errorMsg.textContent = ''; // Clear previous error message
     successMsg.textContent = ''; // Clear previous success message
 
     try {
-      if (isRegistering) {
+      if (isRegistering) { // Register the user
         await register();
         successMsg.textContent = 'User created! Please log in.';
         successMsg.style.color = 'green'; // Style it as green
-      } else {
+      } else { // Log in the user
         const loginResponse = await login();
         console.log(loginResponse);
         localStorage.setItem('token', loginResponse.token);
@@ -378,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // Login function
-const login = async (): Promise<LoginUser> => {
+const login = async (): Promise<LoginUser> => { // Log in the user
   if (!usernameInput || !passwordInput) {
     throw new Error('Form not found');
   }
@@ -388,7 +427,7 @@ const login = async (): Promise<LoginUser> => {
 
   const data = { username, password };
 
-  const options: RequestInit = {
+  const options: RequestInit = { // Options for the fetch request
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -396,11 +435,12 @@ const login = async (): Promise<LoginUser> => {
 
   const response = await fetchData<LoginUser>(apiUrl + '/auth/login', options);
 
-  if (response && response.token) {
+  if (response && response.token) { // Save the token to localStorage
     localStorage.setItem('token', response.token);
     localStorage.setItem('favoriteRestaurant', response.data.favoriteRestaurant);
     console.log('User logged in, token saved to LS');
     console.log(response.data);
+    location.reload();
 
     // Clear input fields and close the modal
     usernameInput.value = '';
@@ -409,19 +449,19 @@ const login = async (): Promise<LoginUser> => {
 
     return response;
   } else {
-    throw new Error('Login failed. Invalid credentials.');
+    throw new Error('Login failed. Invalid credentials.'); // Display error message
   }
 };
 
 // Register function
-const register = async (): Promise<User> => {
+const register = async (): Promise<User> => { // Register the user
   const username = usernameInput.value;
   const password = passwordInput.value;
   const email = emailInput.value;
 
   const data = { username, password, email };
 
-  const options: RequestInit = {
+  const options: RequestInit = { // Options for the fetch request
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -445,8 +485,8 @@ const register = async (): Promise<User> => {
 
 const showFavoriteButton = document.getElementById('show-favorite') as HTMLButtonElement;
 
-showFavoriteButton &&
-  showFavoriteButton.addEventListener('click', async () => {
+
+showFavoriteButton?.addEventListener('click', async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       // If the user is not logged in, open the login dialog
@@ -457,11 +497,11 @@ showFavoriteButton &&
         dialog.showModal();
         document.body.classList.add('no-scroll');
       }
-      return; // Stop further execution until the user is logged in
+      return; // Stop execution until the user is logged in
     }
 
     try {
-      // Fetch user details to get the favorite restaurant ID
+      // Fetch user to get the favorite restaurant ID
       const userResponse = await fetchData<getFavorite>(`${apiUrl}/users/token`, {
         method: 'GET',
         headers: {
@@ -471,14 +511,24 @@ showFavoriteButton &&
       });
       console.log(userResponse);
 
-      const favoriteRestaurantId = userResponse.favouriteRestaurant;
+      const favoriteRestaurantId = userResponse.favouriteRestaurant; // Get the favorite restaurant ID from the response
       if (!favoriteRestaurantId) {
         console.log('No favorite restaurant found.');
+        modal.innerHTML = errorModal('No favorite restaurant has been added. Add one by clicking a marker.'); // Display error message
+        const closeButtonHtml = `
+                      <div class="close-modal">
+                        <button id="close-dialog">&#128940</button>
+                      </div>`;
+        modal.insertAdjacentHTML('beforeend', closeButtonHtml);
+        modal.showModal();
+        const closeButton = document.getElementById('close-dialog') as HTMLButtonElement;
+        closeButton && closeButton.addEventListener('click', () => {
+            modal.close();});
         return;
       }
 
-      // Fetch the favorite restaurant details using the ID from the response
-      const favoriteRestaurant = await fetchData<Restaurant>(
+      // Fetch the favorite restaurant using the ID from the response
+      const favoriteRestaurant = await fetchData<Restaurant>( // Fetch the favorite restaurant details
         `${apiUrl}/restaurants/${favoriteRestaurantId}`
       );
 
@@ -489,19 +539,63 @@ showFavoriteButton &&
         map.setView([lat, lon], 9);
 
         // open the popup for the restaurant
-        const favoriteMarker = L.marker([lat, lon], { icon: restaurantIcon }).addTo(map);
+        const favoriteMarker = L.marker([lat, lon], { icon: restaurantIcon }).addTo(map); // Add a marker for the favorite restaurant
         const popupHTML = popupContent(favoriteRestaurant, true);
-        favoriteMarker.bindPopup(popupHTML, { className: 'custom-popup' }).openPopup();
+        favoriteMarker.bindPopup(popupHTML, { className: 'custom-popup' }).openPopup(); // Open the popup for the favorite restaurant
       } else {
         console.log('Favorite restaurant details not found.');
       }
     } catch (error) {
-      console.error('Failed to fetch favorite restaurant details:', error);
+      console.error('Failed to fetch favorite restaurant details:', error); // Display error message
       modal.innerHTML = errorModal((error as Error).message);
+      const closeButtonHtml = `
+                      <div class="close-modal">
+                        <button id="close-dialog">&#128940</button>
+                      </div>`;
+      modal.insertAdjacentHTML('beforeend', closeButtonHtml);
+      const closeButton = document.getElementById('close-dialog') as HTMLButtonElement;
+      closeButton && closeButton.addEventListener('click', () => {
+        modal.close();});
       modal.showModal();
     }
 });
 
+const toggleSwitch = document.getElementById('checkbox') as HTMLInputElement;
+const nav = document.querySelector('.main-nav') as HTMLElement;
+const filterBtn = document.querySelectorAll('.filter-buttons button') as NodeListOf<HTMLButtonElement>;
+const footer = document.querySelector('.foot h4') as HTMLElement;
+const foot = document.querySelector('.foot') as HTMLElement;
 
+// Function to apply the theme based on localStorage value
+function applyTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const isLightMode = savedTheme === 'light';
 
+  document.body.classList.toggle('light', isLightMode); // Toggle the light class
+  nav.classList.toggle('light', isLightMode);
+  footer.classList.toggle('light', isLightMode);
+  foot.classList.toggle('light', isLightMode);
+  filterBtn.forEach(button => button.classList.toggle('light', isLightMode));
+
+  toggleSwitch.checked = isLightMode;
+}
+
+// Event listener for the toggle switch
+toggleSwitch?.addEventListener('change', () => { // Change the theme based on the toggle switch
+  const isLightMode = toggleSwitch.checked;
+
+  document.body.classList.toggle('light', isLightMode);
+  nav.classList.toggle('light', isLightMode);
+  foot.classList.toggle('light', isLightMode);
+  footer.classList.toggle('light', isLightMode);
+  filterBtn.forEach(button => button.classList.toggle('light', isLightMode));
+
+  localStorage.setItem('theme', isLightMode ? 'light' : 'dark'); // Save the theme to localStorage
+});
+
+// Apply the theme when the page loads
+document.addEventListener('DOMContentLoaded', applyTheme); // Apply the theme when the page loads
+
+// Geolocation function
 navigator.geolocation.getCurrentPosition(locate);
+
