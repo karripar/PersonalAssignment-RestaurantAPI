@@ -23,6 +23,7 @@
   --navy: #023047;
   --not-so-white: #f8f9fa;
   --dark-gray: #2b2b2b;
+  --error-red: #FF3333;
 
 }
 
@@ -190,6 +191,41 @@ dialog {
   padding: 3rem;
 }
 
+.error-modal h3 {
+  color: var(--error-red);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  font-size: 2rem;
+  border-bottom: 3px solid var(--error-red);
+  width: 8rem;
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.fetch-error {
+  display: flex;
+  margin: auto;
+}
+
+.fetch-error button {
+  padding: 10px 15px;
+  border: none;
+  outline: none;
+  background-color: var(--error-red);
+  color: var(--not-so-white);
+  margin: auto;
+  border-radius: 10px;
+}
+
+.fetch-error button:hover {
+  background-color: var(--not-so-white);
+  color: var(--error-red);
+  box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6);
+  cursor: pointer;
+}
+
 .marker-popup {
   font-weight: bold;
   display: flex;
@@ -207,7 +243,7 @@ dialog {
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
   padding: 10px;
-  border: 3px solid var(--cool-yellow); 
+  border: 3px solid var(--cool-yellow);
 }
 
 .marker-popup button {
@@ -269,33 +305,33 @@ dialog {
 }
 
 .filter-buttons select {
-  background-color: #1e1e1e; /* Very dark background */
-  color: #f0f0f0; /* Light text color */
-  border: none; /* No border for a clean look */
-  padding: 10px 14px; /* Comfortable padding */
-  width: 10rem; /* Full width */
-  font-size: .8rem; /* Adjust font size */
-  border-radius: 8px; /* Softer rounded corners */
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border: none;
+  padding: 10px 14px;
+  width: 10rem;
+  font-size: .8rem;
+  border-radius: 8px;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for a raised look */
-  transition: all 0.3s ease; /* Smooth transition for hover/focus */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
   background-image: linear-gradient(45deg, transparent 50%, #f0f0f0 50%), linear-gradient(135deg, #f0f0f0 50%, transparent 50%);
   background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  cursor: pointer; /* Pointer cursor on hover */
+  cursor: pointer;
 }
 
 .filter-buttons select:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Darker and slightly larger shadow */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .filter-buttons select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.5); /* Focus outline with blue tint */
-  background-color: #292929; /* Slightly lighter background on focus */
+  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.5);
+  background-color: #292929;
 }
 
 .filter-buttons select option {

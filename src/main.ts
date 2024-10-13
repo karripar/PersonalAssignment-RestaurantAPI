@@ -278,11 +278,11 @@ const locate = async (pos: GeolocationPosition) => {
   } catch (error) {
     modal.innerHTML = errorModal("Couldn't fetch restaurants. Check your internet or VPN connection."); // Display error message
     const closeButtonHtml = `
-                      <div class="close-modal">
-                        <button id="close-dialog">&#128940</button>
+                      <div class="fetch-error">
+                        <button id="fetch-error-button">Close</button>
                       </div>`;
     modal.insertAdjacentHTML('beforeend', closeButtonHtml);
-    const closeButton = document.getElementById('close-dialog') as HTMLButtonElement;
+    const closeButton = document.getElementById('fetch-error-button') as HTMLButtonElement;
     closeButton && closeButton.addEventListener('click', () => {
       modal.close();
     });
