@@ -232,6 +232,17 @@ dialog {
   flex-direction: column;
 }
 
+#address-link { /* <a> link to google maps*/
+  background: transparent;
+  color: var(--cool-yellow);
+  font-size: 1rem;
+  text-wrap: wrap;
+}
+
+#address-link:hover {
+  color: var(--cool-orange);
+}
+
 .custom-popup {
   background-color: white;
   border-radius: 10px;

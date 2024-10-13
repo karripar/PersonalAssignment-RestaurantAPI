@@ -124,12 +124,26 @@ const errorModal = (message: string) => { // Error modal
 
 const popupContent = (restaurant: Restaurant, isFavorite: boolean): string => { // Popup content for markers
   const { name, address, company, city, postalCode } = restaurant;
+  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)},+${encodeURIComponent(postalCode)}+${encodeURIComponent(city)}` as string;
 
   let content = `
     <div class="marker-popup">
       <h3>${name}</h3>
       <p>${company}</p>
-      <p>${address}, ${postalCode} ${city}</p>
+      <p> View in
+      <span style="color: #4285F4;">G</span>
+      <span style="color: #EA4335;">o</span>
+      <span style="color: #FBBC05;">o</span>
+      <span style="color: #4285F4;">g</span>
+      <span style="color: #34A853;">l</span>
+      <span style="color: #EA4335;">e</span>
+      Maps:</p>
+      <p>
+      <a id="address-link" href="${googleMapsLink}" target="_blank" rel="noopener noreferrer">
+        ${address}, ${postalCode} ${city}
+      </a>
+      </p>
+
       <div class="popup-buttons">
         <button id="todays-menu">Today's menu</button>
         <button id="weekly-menu">Weekly menu</button>
